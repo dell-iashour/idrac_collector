@@ -1,0 +1,98 @@
+# iDRAC Redfish Collector Configuration
+name: "iDRAC Collector"
+version: "1.0.0"
+
+# Collection Configuration
+collection:
+  # Collection endpoints - configure which data to collect
+  endpoints:
+    - name: "system"
+      path: "/Systems/System.Embedded.1"
+      expand: true
+      levels: 1
+      enabled: true
+      description: "System information including service tag, model, firmware"
+      timeout: 30
+      retry_attempts: 3
+    
+    - name: "memory"
+      path: "/Systems/System.Embedded.1/Memory"
+      expand: true
+      levels: 1
+      enabled: true
+      description: "Memory modules information"
+      timeout: 30
+      retry_attempts: 3
+    
+    - name: "storage"
+      path: "/Systems/System.Embedded.1/Storage"
+      expand: true
+      levels: 1
+      enabled: true
+      description: "Storage controllers and disks"
+      timeout: 45
+      retry_attempts: 3
+    
+    - name: "network"
+      path: "/Systems/System.Embedded.1/EthernetInterfaces"
+      expand: true
+      levels: 1
+      enabled: true
+      description: "Network interface cards and configuration"
+      timeout: 30
+      retry_attempts: 3
+
+    - name: "firmware"
+      path: "/UpdateService/FirmwareInventory"
+      expand: true
+      levels: 1
+      enabled: true
+      description: "Firmware inventory and versions"
+      timeout: 45
+      retry_attempts: 3
+  
+  # Folder configuration
+  temp_folder: "temp"
+  output_folder: "output"
+  compression: true
+  naming_format: "{service_tag}_{timestamp}.zip"
+  
+  # Performance configuration
+  parallel_collections: 5
+  collection_timeout: 300
+  
+  # Retry configuration
+  retry:
+    max_attempts: 3
+    delay: 5
+    backoff_factor: 2.0
+  
+  # Output configuration
+  output:
+    include_metadata: true
+    include_timestamps: true
+    pretty_print_json: true
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  file: "collector.log"
+  verbose: true
+
+# Servers can be configured here or in separate servers.yaml file
+servers:
+  - host: "192.168.1.100"
+    port: 443
+    username: "root"
+    password: "calvin"
+    verify_ssl: false
+    timeout: 30
+    name: "Server-01"
+  
+  - host: "192.168.1.101"
+    port: 443
+    username: "root"
+    password: "calvin"
+    verify_ssl: false
+    timeout: 30
+    name: "Server-02"

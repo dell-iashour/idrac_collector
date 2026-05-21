@@ -1,0 +1,246 @@
+# iDRAC Redfish Collector - Enhanced Server Configuration
+# This file supports flexible server specification with IP ranges, patterns, and shared credentials
+
+# Server Groups - Define reusable credential sets
+server_groups:
+  production:
+    username: "root"
+    password: "calvin"
+    verify_ssl: false
+    timeout: 30
+    base_path: "/redfish/v1"
+    
+  staging:
+    username: "admin"
+    password: "password123"
+    verify_ssl: false
+    timeout: 30
+    base_path: "/redfish/v1"
+    
+  corporate:
+    username: "root"
+    password: "secure_password"
+    verify_ssl: true
+    timeout: 45
+    base_path: "/redfish/v1"
+    
+  interactive:
+    username: "root"
+    password: "ASK_USER"  # Will prompt user to enter password at runtime
+    verify_ssl: false
+    timeout: 30
+    base_path: "/redfish/v1"
+
+# Server Definitions - Multiple specification methods
+servers:
+  # Method 1: Individual servers with explicit credentials
+  - host: "192.168.1.100"
+    port: 443
+    username: "root"
+    password: "calvin"
+    verify_ssl: false
+    timeout: 30
+    name: "PROD-SRV-001"
+    
+  # Method 2: Individual server using server group
+  - host: "192.168.1.101"
+    port: 443
+    group: "production"
+    name: "PROD-SRV-002"
+    
+  # Method 3: IP range with sequential hosts
+  - range: "192.168.1.110-192.168.1.119"
+    port: 443
+    group: "production"
+    name_template: "PROD-SRV-{seq:03d}"
+    
+  # Method 4: CIDR notation for subnet
+  - cidr: "192.168.2.0/24"
+    port: 443
+    group: "production"
+    name_template: "PROD-SRV-{ip}"
+    
+  # Method 5: IP pattern with wildcards
+  - pattern: "10.0.0.{50-55}"
+    port: 443
+    group: "staging"
+    name_template: "STAGE-SRV-{seq:02d}"
+    
+  # Method 6: Multiple IP ranges in one definition
+  - ranges:
+      - "192.168.3.10-192.168.3.15"
+      - "192.168.3.20-192.168.3.25"
+    port: 443
+    group: "production"
+    name_template: "PROD-SRV-{seq:03d}"
+    
+  # Method 7: Hostname patterns
+  - hostname_pattern: "idrac-{01-10}.company.com"
+    port: 443
+    group: "corporate"
+    name_template: "CORP-SRV-{seq:02d}"
+    
+  # Method 8: Mixed configuration with custom credentials
+  - range: "10.1.1.100-10.1.1.105"
+    port: 443
+    username: "custom_user"
+    password: "custom_pass"
+    verify_ssl: true
+    timeout: 60
+    name_template: "CUSTOM-SRV-{seq:03d}"
+    
+  # Method 9: Interactive password prompt for sensitive environments
+  - range: "10.2.1.1-10.2.1.10"
+    port: 443
+    username: "admin"
+    password: "ASK_USER"  # Will prompt user to enter password at runtime
+    verify_ssl: true
+    timeout: 45
+    name_template: "SECURE-SRV-{seq:03d}"
+
+# Advanced Configuration Options
+advanced:
+  # Parallel processing settings
+  max_concurrent_connections: 50
+  connection_timeout: 30
+  request_timeout: 60
+  
+  # IP resolution settings
+  dns_timeout: 10
+  ping_test: true
+  exclude_unreachable: true
+  
+  # Naming conventions
+  default_name_template: "SRV-{seq:04d}"
+  include_ip_in_name: false
+  
+  # Retry and error handling
+  connection_retry_attempts: 3
+  connection_retry_delay: 5
+  skip_on_failure: true
+
+# Server Filtering (Optional)
+filters:
+  # Include only servers matching these criteria
+  include:
+    ip_patterns:
+      - "192.168.*"
+      - "10.0.*"
+    name_patterns:
+      - "PROD-*"
+      - "STAGE-*"
+    
+  # Exclude servers matching these criteria
+  exclude:
+    ip_ranges:
+      - "192.168.1.1-192.168.1.10"  # Exclude network equipment
+    names:
+      - "TEST-*"
+      - "DEV-*"
+
+# Server Group Templates (for different environments)
+environments:
+  development:
+    group: "staging"
+    ranges:
+      - "10.0.0.100-10.0.0.109"
+    name_template: "DEV-SRV-{seq:03d}"
+    
+  testing:
+    group: "staging"
+    ranges:
+      - "10.0.1.50-10.0.1.59"
+    name_template: "TEST-SRV-{seq:03d}"
+    
+  production:
+    group: "production"
+    ranges:
+      - "192.168.1.200-192.168.1.249"
+    name_template: "PROD-SRV-{seq:03d}"
+
+# Dynamic Server Discovery (Optional)
+discovery:
+  enabled: false
+  
+  # Network scan settings
+  scan_subnets:
+    - "192.168.1.0/24"
+    - "10.0.0.0/24"
+  
+  # Port scanning for iDRAC
+  scan_ports: [443, 8443]
+  
+  # Authentication test
+  test_credentials: true
+  test_group: "production"
+  
+  # Auto-add discovered servers
+  auto_add: true
+  auto_group: "production"
+  auto_name_template: "DISCOVERED-SRV-{seq:03d}"
+
+# Server Health Monitoring (Optional)
+monitoring:
+  enabled: false
+  
+  # Health check settings
+  health_check_interval: 300  # seconds
+  health_check_timeout: 10
+  health_check_group: "production"
+  
+  # Unhealthy server handling
+  mark_unhealthy_after: 3     # consecutive failures
+  exclude_unhealthy: true
+  auto_recovery_check: true
+  
+  # Alerting
+  alert_on_failure: false
+  alert_threshold: 5          # servers
+
+# Configuration Examples and Templates
+
+# Example 1: Large data center with sequential IPs
+# - range: "192.168.10.1-192.168.10.200"
+#   port: 443
+#   group: "production"
+#   name_template: "DC1-RACK{rack:02d}-SRV{server:02d}"
+
+# Example 2: Multiple sites with different credentials
+# - site: "site_a"
+#   ranges: ["10.1.0.1-10.1.0.50", "10.1.1.1-10.1.1.50"]
+#   group: "site_a_credentials"
+#   name_template: "SITEA-R{rack:02d}-S{server:02d}"
+# 
+# - site: "site_b"
+#   ranges: ["10.2.0.1-10.2.0.30"]
+#   group: "site_b_credentials"
+#   name_template: "SITEB-R{rack:02d}-S{server:02d}"
+
+# Example 3: Hostname-based discovery
+# - hostname_pattern: "idrac-{rack:02d}-{server:02d}.datacenter.local"
+#   port: 443
+#   group: "production"
+#   name_template: "DC{rack:02d}-SRV{server:02d}"
+
+# Template Variables for name_template:
+# {seq}        - Sequential number (1, 2, 3...)
+# {seq:03d}    - Sequential number with padding (001, 002, 003...)
+# {ip}         - IP address
+# {host}       - Hostname
+# {rack}       - Rack number (if specified)
+# {server}     - Server number (if specified)
+# {site}       - Site name (if specified)
+# {group}      - Server group name
+
+# Interactive Password Configuration:
+# Use "ASK_USER" as password value to prompt for password at runtime
+# The password will be hidden during input and cached for the session
+# Examples:
+#   group: "interactive"  # Uses interactive server group
+#   password: "ASK_USER"  # Prompts for password for this server/range
+
+# Security Best Practices:
+# - Use "ASK_USER" for production environments
+# - Store passwords in environment variables for CI/CD
+# - Avoid hardcoding sensitive credentials in config files
+# - Consider using key management systems for large deployments

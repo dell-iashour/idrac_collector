@@ -1,0 +1,9 @@
+# iDRAC Redfish Collector - Minimal Requirements
+# This collector is designed to work with Python standard library only
+# No external packages are required for basic functionality
+
+# Optional dependencies for enhanced functionality:
+# PyYAML is recommended for YAML configuration files
+# If not available, the collector will fall back to JSON format
+
+PyYAML>=5.1  # For YAML configuration file support (optional)
