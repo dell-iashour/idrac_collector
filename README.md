@@ -179,8 +179,8 @@ Options:
 
 ```
 output/
-├── DV5V8T2_20260520_202645.zip    # Server 1 package
-├── 8JLW8T2_20260520_202647.zip    # Server 2 package
+├── DI8V8O2_20260520_202645.zip    # Server 1 package
+├── A3LT8T2_20260520_202647.zip    # Server 2 package
 └── ...
 
 temp/                              # Temporary collection files
