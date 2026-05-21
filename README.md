@@ -59,7 +59,7 @@ python idrac_collector.py --cleanup --config config.yaml --days 7
 server_groups:
   production:
     username: "root"
-    password: "calvin"
+    password: "password"
     verify_ssl: false
     timeout: 30
     base_path: "/redfish/v1"
@@ -72,12 +72,12 @@ server_groups:
 
 # Server definitions
 servers:
-  - host: "100.104.55.247"
+  - host: "192.168.1.247"
     port: 443
     group: "production"
     name: "PROD-SRV-1"
 
-  - host: "100.104.55.250"
+  - host: "192.168.1.250"
     port: 443
     group: "production"
     name: "PROD-SRV-2"
